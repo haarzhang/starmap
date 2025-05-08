@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, send_file, jsonify
-import datetime
+from datetime import datetime
 import pytz
 import io
 import logging
@@ -26,7 +26,7 @@ def index():
             # 组合日期和时间，并添加时区信息
             beijing_tz = pytz.timezone('Asia/Shanghai')
             when_str = f"{date} {time}:00"
-            when = datetime.datetime.strptime(when_str, '%Y-%m-%d %H:%M:%S')
+            when = datetime.strptime(when_str, '%Y-%m-%d %H:%M:%S')
             when = beijing_tz.localize(when)
             
             # 生成星图
@@ -44,9 +44,9 @@ def index():
             logger.error(f"生成星图时出错: {str(e)}")
             return jsonify({'error': str(e)}), 400
     
-    # 获取当前时间（北京时区）
+    # 获取当前时间（北京时间）
     beijing_tz = pytz.timezone('Asia/Shanghai')
-    current_time = datetime.datetime.now(beijing_tz)
+    current_time = datetime.now(beijing_tz)
     
     return render_template('index.html', 
                          current_date=current_time.strftime("%Y-%m-%d"),
