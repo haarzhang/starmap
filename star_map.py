@@ -193,10 +193,6 @@ def collect_celestial_data(location, when, transparent=True):
         ax.set_facecolor('#041A40')
         fig.patch.set_facecolor('#041A40')
     
-    # 设置标题
-    plt.title(f'星空图 - {location}\n{when.strftime("%Y-%m-%d %H:%M:%S")}', 
-              color='white', pad=20)
-    
     # 保存图像
     buf = io.BytesIO()
     plt.savefig(buf, format='png', 

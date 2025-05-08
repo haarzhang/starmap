@@ -79,11 +79,20 @@
             max-width: 100%;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
         .error {
             color: #ff4d4f;
             margin-top: 10px;
             text-align: center;
+        }
+        .download-btn {
+            display: none;
+            background-color: #52c41a;
+            margin-top: 10px;
+        }
+        .download-btn:hover {
+            background-color: #73d13d;
         }
     </style>
 </head>
@@ -140,21 +149,29 @@
                     // 获取文件名
                     const filename = response.headers.get('content-disposition')?.split('filename=')[1] || 'star_map.png';
                     
-                    // 创建下载链接
+                    // 创建预览图
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
                     
                     // 显示预览
                     const img = document.createElement('img');
                     img.src = url;
                     result.appendChild(img);
+                    
+                    // 创建下载按钮
+                    const downloadBtn = document.createElement('button');
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.textContent = '下载星空图';
+                    downloadBtn.onclick = function() {
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                    };
+                    result.appendChild(downloadBtn);
+                    downloadBtn.style.display = 'block';
                 } else {
                     throw new Error('生成失败');
                 }
