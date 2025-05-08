@@ -18,7 +18,7 @@ import pytz
 import matplotlib.font_manager as fm
 
 # 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS', 'sans-serif']  # 添加多个备选字体
+plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']  # 只使用微软雅黑
 plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
 
 # 全局缓存
@@ -56,6 +56,8 @@ def load_data():
         # 尝试从本地文件加载
         with open('hip_main.dat', 'rb') as f:
             _df = hipparcos.load_dataframe(f)
+            # 只保留亮度大于6.5等的恒星
+            _df = _df[_df['magnitude'] <= 6.5]
     except Exception as e:
         print(f"无法从本地加载星表数据：{str(e)}")
         print("尝试从网络加载...")
@@ -63,6 +65,8 @@ def load_data():
             # 如果本地加载失败，尝试从网络加载
             with load.open(hipparcos.URL) as f:
                 _df = hipparcos.load_dataframe(f)
+                # 只保留亮度大于6.5等的恒星
+                _df = _df[_df['magnitude'] <= 6.5]
         except Exception as e:
             print(f"无法从网络加载星表数据：{str(e)}")
             raise
@@ -116,23 +120,11 @@ def collect_celestial_data(location, when, transparent=True):
     # 过滤可见的恒星
     visible = alt.degrees > 0
     
-    # 根据星等筛选恒星（只显示亮度较高的恒星）
-    limiting_magnitude = 6.5  # 使用6.5等作为限制
-    magnitudes = df['magnitude'].values
-    bright_stars = magnitudes <= limiting_magnitude
-    
-    # 先应用可见性条件
+    # 获取可见的恒星数据
     visible_alt = alt.degrees[visible]
     visible_az = az.degrees[visible]
-    visible_magnitudes = magnitudes[visible]
+    visible_magnitudes = df['magnitude'].values[visible]
     visible_indices = np.where(visible)[0]
-    
-    # 再应用亮度条件
-    bright = visible_magnitudes <= limiting_magnitude
-    visible_alt = visible_alt[bright]
-    visible_az = visible_az[bright]
-    visible_magnitudes = visible_magnitudes[bright]
-    visible_indices = visible_indices[bright]
     
     # 创建图形
     fig = plt.figure(figsize=(10, 10))
@@ -145,10 +137,8 @@ def collect_celestial_data(location, when, transparent=True):
     for name, edges in constellations:
         for star1, star2 in edges:
             try:
-                # 检查恒星是否在数据集中且够亮
+                # 检查恒星是否在数据集中
                 if star1 not in df.index or star2 not in df.index:
-                    continue
-                if df.loc[star1, 'magnitude'] > limiting_magnitude or df.loc[star2, 'magnitude'] > limiting_magnitude:
                     continue
                 
                 # 获取恒星索引
