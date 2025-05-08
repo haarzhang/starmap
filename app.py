@@ -32,13 +32,8 @@ def index():
             # 生成星图
             star_map = collect_celestial_data(location, when, transparent)
             
-            # 将图像保存到内存中
-            img_io = io.BytesIO()
-            star_map.save(img_io, 'PNG')
-            img_io.seek(0)
-            
-            logger.info("星图生成成功")
-            return send_file(img_io, mimetype='image/png')
+            # 返回生成的图片
+            return send_file(star_map, mimetype='image/png')
             
         except Exception as e:
             logger.error(f"生成星图时出错: {str(e)}")

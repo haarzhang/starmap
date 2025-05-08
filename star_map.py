@@ -3,19 +3,20 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from skyfield.api import load, wgs84
+from skyfield.api import load, wgs84, Star
+from skyfield.data import hipparcos, stellarium
 from datetime import datetime
 import pytz
 from geopy.geocoders import Nominatim
 from tzwhere import tzwhere
 import io
-import hipparcos
-import stellarium
 
 def load_data():
     """加载天文数据"""
     # 加载星表数据
-    stars = hipparcos.load('hip_main.dat')
+    with load.open(hipparcos.URL) as f:
+        df = hipparcos.load_dataframe(f)
+    stars = Star.from_dataframe(df)
     
     # 加载星座连线数据
     try:
