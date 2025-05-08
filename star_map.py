@@ -18,8 +18,14 @@ import pytz
 import matplotlib.font_manager as fm
 
 # 设置中文字体
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS']  # macOS 自带的支持中文的字体
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Microsoft YaHei', 'Arial Unicode MS', 'sans-serif']  # 添加多个备选字体
 plt.rcParams['axes.unicode_minus'] = False  # 解决负号显示问题
+
+# 全局缓存
+_eph = None
+_stars = None
+_df = None
+_constellations = None
 
 def parse_constellation_lines(filename):
     constellations = []
@@ -38,34 +44,40 @@ def parse_constellation_lines(filename):
     return constellations
 
 def load_data():
+    global _eph, _stars, _df, _constellations
+    
+    # 如果已经加载过数据，直接返回缓存
+    if _eph is not None and _stars is not None and _df is not None and _constellations is not None:
+        return _eph, _stars, _df, _constellations
+    
     # 加载天文数据
-    eph = load('de421.bsp')
+    _eph = load('de421.bsp')
     try:
         # 尝试从本地文件加载
         with open('hip_main.dat', 'rb') as f:
-            df = hipparcos.load_dataframe(f)
+            _df = hipparcos.load_dataframe(f)
     except Exception as e:
         print(f"无法从本地加载星表数据：{str(e)}")
         print("尝试从网络加载...")
         try:
             # 如果本地加载失败，尝试从网络加载
             with load.open(hipparcos.URL) as f:
-                df = hipparcos.load_dataframe(f)
+                _df = hipparcos.load_dataframe(f)
         except Exception as e:
             print(f"无法从网络加载星表数据：{str(e)}")
             raise
     
     # 创建Star对象
-    stars = Star.from_dataframe(df)
+    _stars = Star.from_dataframe(_df)
     
     # 加载星座连线数据
     try:
-        constellations = parse_constellation_lines('constellationship.fab')
+        _constellations = parse_constellation_lines('constellationship.fab')
     except Exception as e:
         print(f"无法加载星座数据：{str(e)}")
-        constellations = []
+        _constellations = []
     
-    return eph, stars, df, constellations
+    return _eph, _stars, _df, _constellations
 
 def collect_celestial_data(location, when, transparent=True):
     # 获取地理位置
